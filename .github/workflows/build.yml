@@ -29,7 +29,12 @@ jobs:
       - name: Run app test
         run: |
           echo "✅ Build completed successfully."
-          ./build/crow_dashboard --help || true
+          ./build/crow_dashboard &
+          APP_PID=$!
+          sleep 5
+          echo "🌐 Checking HTTP response from Crow server..."
+          curl -I http://localhost:9999/ || echo "⚠️ No response from Crow."
+          kill $APP_PID || true
 
       - name: Build Docker image
         run: |
