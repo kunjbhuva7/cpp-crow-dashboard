@@ -15,10 +15,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ✅ Optional cache for dependencies (faster rebuilds)
+      - name: Cache CMake dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/_deps
+          key: ${{ runner.os }}-crow-deps-cache
+
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake g++
+          sudo apt install -y cmake g++ curl
 
       - name: Build C++ app
         run: |
@@ -34,18 +42,24 @@ jobs:
           sleep 5
           echo "🌐 Checking HTTP response from Crow server..."
           curl -I http://localhost:9999/ || echo "⚠️ No response from Crow."
+          echo "🧹 Stopping Crow app..."
           kill $APP_PID || true
 
       - name: Build Docker image
         run: |
+          echo "🐳 Building Docker image..."
           docker build -t cpp-crow-dashboard:latest .
 
       - name: Run Docker container (test)
         run: |
+          echo "🚀 Running container..."
           docker run -d --name crow_dashboard -p 9999:9999 cpp-crow-dashboard:latest
           sleep 5
-          docker ps
-          docker logs crow_dashboard | tail -n 10
+          echo "🌐 Testing Dockerized Crow server..."
+          docker exec crow_dashboard curl -I http://localhost:9999/ || echo "⚠️ Docker container did not respond."
+          echo "🧹 Cleaning up container..."
+          docker stop crow_dashboard
+          docker rm crow_dashboard
 
   push_dockerhub:
     name: Push Docker Image to Docker Hub
@@ -57,10 +71,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Docker
-        run: |
-          sudo apt update
-          sudo apt install -y docker.io
+      # ✅ Remove conflicting install
+      # Docker is already installed on GitHub runners
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
