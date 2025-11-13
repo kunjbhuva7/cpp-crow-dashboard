@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ Optional cache for dependencies (faster rebuilds)
+      # ✅ Cache CMake dependencies (faster rebuilds)
       - name: Cache CMake dependencies
         uses: actions/cache@v4
         with:
@@ -71,19 +71,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ✅ Remove conflicting install
-      # Docker is already installed on GitHub runners
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # ✅ Optional verification (shows Docker username in logs)
+      - name: Verify Docker login
+        run: |
+          echo "👤 Docker login successful for: $(docker info -f '{{.RegistryConfig.IndexConfigs.index.docker.io.Name}}')"
+
+      # ✅ Push Docker image with multiple tags
       - name: Build and Push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cpp-crow-dashboard:latest
+          tags: |
+            kunj22/cpp-crow-dashboard:latest
+            kunj22/cpp-crow-dashboard:${{ github.sha }}
 
