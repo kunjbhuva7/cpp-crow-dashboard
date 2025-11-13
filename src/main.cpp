@@ -62,7 +62,7 @@ int main() {
     });
 
     // ✅ Running on port 55000 now
-    app.port(55000).multithreaded().run();
+    app.bindaddr("0.0.0.0").port(55000).multithreaded().run();
     return 0;
 }
 
