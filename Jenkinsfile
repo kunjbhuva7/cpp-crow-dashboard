@@ -12,6 +12,15 @@ pipeline {
       }
     }
 
+  stage('Install Dependencies') {
+        steps {
+            sh '''
+              apt-get update -y
+              apt-get install -y cmake g++ git
+            '''
+        }
+    }
+
     stage('Build with CMake') {
       steps {
         sh '''
