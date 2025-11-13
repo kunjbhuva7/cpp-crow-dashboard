@@ -14,7 +14,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(asio)
 
-# ✅ 2. Fetch Crow (use latest master branch)
+# ✅ 2. Disable Crow’s own find_package(asio)
+set(CMAKE_DISABLE_FIND_PACKAGE_asio TRUE)
+add_definitions(-DASIO_STANDALONE)
+
+# ✅ 3. Fetch Crow
 FetchContent_Declare(
   crow
   GIT_REPOSITORY https://github.com/CrowCpp/crow.git
@@ -22,11 +26,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(crow)
 
-# ✅ 3. Set Crow’s ASIO include path manually
+# ✅ 4. Define Asio include path manually
 set(ASIO_INCLUDE_DIR "${asio_SOURCE_DIR}/asio/include")
-add_definitions(-DASIO_STANDALONE)
 
-# ✅ 4. Build your dashboard app
+# ✅ 5. Build dashboard app
 add_executable(crow_dashboard src/main.cpp)
 
 target_include_directories(crow_dashboard PRIVATE
